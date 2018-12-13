@@ -1,32 +1,38 @@
 <div style="text-align:center">
   <h1>
-    Welcome to {{ title }}!
+    Welcome to Groups!
   </h1>
-<div>
-  <input type="number" [(ngModel)]="boysCount" width="200px">
-  <input type="number" [(ngModel)]="girlsCount" width="200px">
-</div>
-<div>
-<textarea placeholder="Boys" [(ngModel)]="boys" style="height:200px; width:200px;" (change)="boysCount = boys.split('\n').length"></textarea>
-<textarea placeholder="Girls" [(ngModel)]="girls" style="height:200px; width:200px;"></textarea>
-</div>
-<div>
-  <input type="number" [(ngModel)]="minBoys" width="200px">
-  <input type="number" [(ngModel)]="minGirls" width="200px">
-</div>
+  <div>
+    <input type="number" [(ngModel)]="boysCount" width="200px">
+    <input type="number" [(ngModel)]="girlsCount" width="200px">
+  </div>
+  <div>
+    <textarea placeholder="Boys" [(ngModel)]="boys" style="height:200px; width:200px;" (change)="boysCount = boys.split('\n').length"></textarea>
+    <textarea placeholder="Girls" [(ngModel)]="girls" style="height:200px; width:200px;"></textarea>
+  </div>
+  <div>
+    <input type="number" [(ngModel)]="minBoys" width="200px">
+    <input type="number" [(ngModel)]="minGirls" width="200px">
+  </div>
 </div>
 <button (click)="updateConfig()">Prep</button>
+<div>
+  <input placeholder="Rounds" type="number" [(ngModel)]="rounds" width="200px">
+</div>
+<div>
+  <input placeholder="Iterations" type="number" [(ngModel)]="iterations" width="200px">
+</div>
 <button (click)="run()">Run</button>
 <div>Groups: {{ config?.distributions.length }}</div>
 <div>{{ config?.distributions }}</div>
 <div *ngIf="builder">
-<div>Rounds:</div>
-<div *ngFor="let round of builder.rounds; let idx = index;" class="round">
+  <div>Rounds:</div>
+  <div *ngFor="let round of builder.rounds; let idx = index;" class="round">
     <div class="caption">{{ idx + 1 }}: {{ round.cost | number : '1.0-2' }}</div>
     <div class="groups">
       <div *ngFor="let group of round.groups;" class="group">
         <div *ngFor="let member of group.members" class="member" [class.host]="member === group.host">{{ member }}</div>
       </div>
     </div>
-</div>
+  </div>
 </div>

@@ -11,7 +11,6 @@ export class AppComponent {
   @Input() girls = '';
   @Input() minBoys = 2;
   @Input() minGirls = 2;
-
   _boysCount = 10;
   _girlsCount = 10;
 

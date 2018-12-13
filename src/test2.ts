@@ -43,10 +43,10 @@ export class BuildConfiguration {
             res.push(dist);
         }
         for (let i = 0; i < girlCount; i++) {
-            res[i].girls++;
+            res[i % res.length].girls++;
         }
         for (let i = 0; i < boyCount; i++) {
-            res[girlCount + i].boys++;
+            res[(girlCount + i) % res.length].boys++;
         }
         return res;
     }
