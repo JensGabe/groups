@@ -1,16 +1,39 @@
+.setup {
+    .part {
+        vertical-align: top;
+        display: inline-block;
+        margin: 3pt;
+        & > * {
+            display: block
+        }
+        input[type=number] {
+            width: 50px;
+        }
+    }
+}
 .round {
-    margin: 6pt;
+    margin: 6pt 9pt;
+    display: inline-block;
     .caption {
+        line-height: 18pt;
         font-size: 14pt;
         font-weight: bold;
     }
+}
+.cost {
+    float: right;
+    font-size: small;
 }
 .groups {
 }
 .group{
     display: inline-block;
-    margin: 6pt;
     vertical-align: top;
+    &:not(:first-child) {
+        margin-left: 6pt;
+        padding-left: 6pt;
+        border-left: 1px solid whitesmoke;
+    }
 }
 
 .member {

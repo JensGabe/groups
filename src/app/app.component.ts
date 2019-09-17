@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
-import { Builder, BuildConfiguration, Round, Group, Distribution } from '../test2';
+import { LocalStorage } from 'ngx-store';
+import { Builder, BuildConfiguration, Round, Group, Distribution, parseDistributions, calcDistributions } from '../test2';
 
 @Component({
   selector: 'app-root',
@@ -7,12 +8,22 @@ import { Builder, BuildConfiguration, Round, Group, Distribution } from '../test
   styleUrls: ['./app.component.less']
 })
 export class AppComponent {
-  @Input() boys = '';
-  @Input() girls = '';
-  @Input() minBoys = 2;
-  @Input() minGirls = 2;
-  _boysCount = 10;
-  _girlsCount = 10;
+  @LocalStorage() boys = '';
+  @LocalStorage() girls = '';
+  @LocalStorage() minBoys = 2;
+  @LocalStorage() minGirls = 2;
+
+  @LocalStorage() distributions: string;
+  @LocalStorage() rounds = 'R1';
+  @LocalStorage() iterations = 10000;
+  @LocalStorage() assignHost = true;
+
+  config: BuildConfiguration;
+  builder: Builder;
+
+  private _boysCount: number;
+  private _girlsCount: number;
+  private _roundsCount: number;
 
   @Input() set boysCount(count: number) {
     this._boysCount = count;
@@ -32,8 +43,17 @@ export class AppComponent {
     return this._girlsCount;
   }
 
+  @Input() set roundsCount(count: number) {
+    this._roundsCount = count;
+    this.rounds = this.setLength(this.rounds, count, 'R');
+  }
+
+  get roundsCount(): number {
+    return this._roundsCount;
+  }
+
   private setLength(value: string, count: number, prefix: string): string {
-    let arr = value.split('\n');
+    const arr = value.split('\n');
     let idx: number;
     while ((idx = arr.indexOf('')) !== -1) {
       arr.splice(idx, 1);
@@ -46,28 +66,32 @@ export class AppComponent {
   }
 
   constructor() {
-    this.girlsCount = 10;
-    this.boysCount = 10;
+    this._boysCount = this.boys.split('\n').length;
+    this._girlsCount = this.girls.split('\n').length;
+    this._roundsCount = this.rounds.split('\n').length;
   }
 
   xngOnChanges() {
     this.updateConfig();
   }
 
-  @Input() rounds = 5;
-  @Input() iterations = 10000;
-  config: BuildConfiguration;
-  builder: Builder;
-
 
   updateConfig(): BuildConfiguration {
     const boys = this.boys.split('\n');
     const girls = this.girls.split('\n');
-    return this.config = new BuildConfiguration(boys, girls, this.minBoys, this.minGirls);
+    const rounds = this.rounds.split('\n');
+    const distributions = parseDistributions(this.distributions);
+    return this.config = new BuildConfiguration(boys, girls, distributions, rounds);
   }
 
-
-
+  calc() {
+    const distributions = calcDistributions(this._boysCount, this._girlsCount, this.minBoys, this.minGirls);
+    let res: string = '';
+    for (let i = 0; i < distributions.length; i++) {
+      res += ' ' + distributions[i].boys + ':' + distributions[i].girls;
+    }
+    this.distributions = res.substring(1);
+  }
 
   run() {
     this.updateConfig();
@@ -76,14 +100,15 @@ export class AppComponent {
   }
 
   private buildNextRound() {
-    if (this.builder.rounds.length < this.rounds) {
+    if (this.builder.rounds.length < this._roundsCount) {
       setTimeout(() => {
-        this.builder.buildRound(this.config, this.iterations);
+        const round = this.builder.buildRound(this.config, this.iterations);
+        if (this.assignHost) {
+          this.builder.assignHosts(round);
+        }
         this.buildNextRound();
       });
     }
   }
 
 }
-
-

@@ -1,12 +1,6 @@
 export class BuildConfiguration {
-    private readonly boys: string[];
-    private readonly girls: string[];
-    readonly distributions: Distribution[];
-    constructor(boys: string[], girls: string[], minBoys: number, minGirls: number) {
-        this.boys = boys;
-        this.girls = girls;
-        this.distributions = this.build(minBoys, minGirls);
-        console.log(`[${this.distributions}]`);
+    // tslint:disable-next-line:max-line-length
+    constructor(private readonly boys: string[], private readonly girls: string[], readonly distributions: Distribution[], readonly rounds: string[]) {
     }
 
     getBoys(): string[] {
@@ -16,11 +10,25 @@ export class BuildConfiguration {
     getGirls(): string[] {
         return this.girls.slice(0);
     }
+}
 
-    private build(minBoys: number, minGirls: number): Distribution[] {
+export function parseDistributions(text: string): Distribution[] {
+    const res: Distribution[] = [];
+    const parts = text.split(' ');
+    for (let i = 0; i < parts.length; i++) {
+        const split = parts[i].split(':');
+        const dist = new Distribution();
+        // tslint:disable-next-line:radix
+        dist.boys = parseInt(split[0]);
+        // tslint:disable-next-line:radix
+        dist.girls = parseInt(split[1]);
+        res.push(dist);
+    }
+    return res;
+}
+
+export function calcDistributions(boyCount: number, girlCount: number, minBoys: number, minGirls: number): Distribution[] {
         const res: Distribution[] = [];
-        let boyCount = this.boys.length;
-        let girlCount = this.girls.length;
         const minGroupSize = minBoys + minGirls;
         while (boyCount >= minBoys && girlCount >= minGirls) {
             const dist = new Distribution();
@@ -51,7 +59,7 @@ export class BuildConfiguration {
         return res;
     }
 
-}
+
 
 export class Builder {
     rounds: Round[] = [];
@@ -68,11 +76,11 @@ export class Builder {
         this.costMatrix = costs;
     }
 
-    buildRound(config: BuildConfiguration, maxIterations: number) {
+    buildRound(config: BuildConfiguration, maxIterations: number): Round {
         let lowestCostRound: Round = null;
         let round: Round;
         for (let i = 0; i < maxIterations; i++) {
-            round = new Round(config, this.costMatrix);
+            round = new Round(config.rounds[this.rounds.length], config, this.costMatrix);
             if (lowestCostRound == null || round.cost < lowestCostRound.cost) {
                 lowestCostRound = round;
                 if (lowestCostRound.cost === 0) {
@@ -81,9 +89,8 @@ export class Builder {
             }
         }
         this.costMatrix.updateCosts(lowestCostRound);
-        this.assignHosts(lowestCostRound);
         this.rounds.push(lowestCostRound);
-        console.log(`${this.rounds.length}\t${lowestCostRound}`);
+        return lowestCostRound;
     }
 
     assignHosts(round: Round) {
@@ -158,7 +165,7 @@ class Costs {
      * @param additions The new additions
      */
     updateCosts(additions: HasKeys) {
-        let key;
+        let key: string;
         for (key in this.costs) {
             if (this.costs.hasOwnProperty(key)) {
                 this.costs[key] = this.costs[key] * .7;
@@ -178,7 +185,6 @@ export interface HasKeys {
     keys(): string[];
 }
 
-
 export class Round implements HasKeys {
     readonly groups: Group[] = [];
     readonly cost: number;
@@ -187,7 +193,7 @@ export class Round implements HasKeys {
      * @param dists The Distribution definitions
      * @returns The populated groups
      */
-    constructor(config: BuildConfiguration, costs: Costs) {
+    constructor(readonly name: string, readonly config: BuildConfiguration, readonly costs: Costs) {
         const boys: string[] = shuffle(config.getBoys());
         const girls: string[] = shuffle(config.getGirls());
         for (const dist of config.distributions) {
