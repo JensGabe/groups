@@ -168,7 +168,7 @@ class Costs {
         let key: string;
         for (key in this.costs) {
             if (this.costs.hasOwnProperty(key)) {
-                this.costs[key] = this.costs[key] * .7;
+                this.costs[key] *= .7;
             }
         }
         for (key of additions.keys()) {
@@ -269,9 +269,10 @@ export class Group implements HasKeys {
             for (i2 = i1 + 1; i2 < l; i2++) {
                 p2 = this.members[i2];
                 if (p1 > p2) {
-                    [p1, p2] = [p2, p1];
+                    values.push(p2 + '::' + p1);
+                } else {
+                    values.push(p1 + '::' + p2);
                 }
-                values.push(p1 + '::' + p2);
             }
         }
         return values;
